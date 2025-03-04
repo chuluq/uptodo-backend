@@ -1,0 +1,11 @@
+{
+  "name": "uptodo-backend",
+  "version": "1.0.0",
+  "description": "Uptodo Backend",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Moch Chaerul Chuluq",
+  "license": "ISC"
+}

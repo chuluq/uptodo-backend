@@ -1,0 +1,651 @@
+openapi: 3.0.3
+info:
+  title: Todo List API
+  description: Todo List API Documentations
+  version: 1.0.0
+  contact:
+    name: Moch Chaerul Chuluq
+    email: choirulchuluq10@gmail.com
+  license:
+    name: APACHE 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+servers:
+  - url: 'https://{environment}.uptodo/api/v1'
+    description: Todo List Restful API
+    variables:
+      environment:
+        default: dev
+        enum:
+          - dev
+          - qa
+          - prod
+paths:
+  /users:
+    post:
+      tags:
+        - Users
+      summary: Create new user
+      description: Create new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                name:
+                  type: string
+                password:
+                  type: string
+                  format: password
+            examples:
+              John Doe:
+                description: Request body of create new user
+                value:
+                  username: johndoe
+                  name: John Doe
+                  password: rahasia123
+      responses:
+        200:
+          description: Success create new user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+              examples:
+                success:
+                  $ref: "#/components/examples/ExampleUser"
+        400:
+          description: Failed create new user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: string
+              examples:
+                failed:
+                  description: Failed response of create new user
+                  value:
+                    errors: Username already registered
+  /users/login:
+    post:
+      tags:
+        - Users
+      summary: Sign in user
+      description: Sign in user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+                  format: password
+            examples:
+              John Doe:
+                description: Request body of login user
+                value:
+                  username: johndoe
+                  password: rahasia123
+      responses:
+        200:
+          description: Success login
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      token:
+                        type: string
+              examples:
+                success:
+                  description: Success response of login
+                  value:
+                    data:
+                      token: D/MAYUZLP32pkWHYLRN0nzNQQhWjnPPqZjJoAD/KenM=
+        400:
+          description: Failed to login
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: string
+              examples:
+                failed:
+                  description: Failed response of login
+                  value:
+                    errors: Username or password is wrong
+  /users/current:
+    patch:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - Users
+      summary: Update current user
+      description: Update current user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                password:
+                  type: string
+                  format: password
+            examples:
+              John Doe:
+                description: Request body of update user
+                value:
+                  name: John Doe Is Cool
+                  password: secretPassword89
+      responses:
+        200:
+          description: Success response of update user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+              examples:
+                success:
+                  value:
+                    data:
+                      username: johndoe
+                      name: John Doe Is Cool
+        400:
+          description: Request is invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                failed:
+                  value:
+                    errors: Max length of name is 100 characters
+        401:
+          $ref: "#/components/responses/ResponseUnauthorized"
+    get:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - Users
+      summary: Get current user
+      description: Get current user
+      responses:
+        200:
+          description: Success response of get current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+              examples:
+                user:
+                  $ref: "#/components/examples/ExampleUser"
+        401:
+          $ref: "#/components/responses/ResponseUnauthorized"
+  /users/logout:
+    delete:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - Users
+      summary: Logout
+      description: Logout from system
+      responses:
+        204:
+          description: OK
+        401:
+          $ref: "#/components/responses/ResponseUnauthorized"
+  /tasks:
+    post:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - Tasks
+      summary: Create new task
+      description: Create new task
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateOrUpdateTask"
+            examples:
+              Jogging:
+                value:
+                  title: Jogging
+                  description: Morning jogging
+                  deadline: 2017-07-21T17:32:28Z
+                  priority: 3
+                  category: Sport
+      responses:
+        200:
+          description: Success response of create task
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Task"
+              examples:
+                task:
+                  $ref: "#/components/examples/ExampleTask"
+        400:
+          description: Request is invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                failed:
+                  value:
+                    errors: Max length of title is 100 characters
+        401:
+          $ref: "#/components/responses/ResponseUnauthorized"
+    get:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - Tasks
+      summary: Get all task
+      description: Get all active task by default
+      parameters:
+        - name: page
+          in: query
+          required: false
+          description: Indicate which page to display
+          schema:
+            type: number
+            nullable: true
+            default: 1
+        - name: size
+          in: query
+          required: false
+          description: Indicate total data to display
+          schema:
+            type: number
+            nullable: true
+            default: 10
+        - name: done
+          in: query
+          required: false
+          description: Is include done todolist
+          schema:
+            type: boolean
+            nullable: true
+            default: false
+        - name: name
+          in: query
+          required: false
+          description: Filter task by name
+          schema:
+            type: string
+            nullable: true
+            minLength: 1
+            maxLength: 100
+          examples:
+            Coding:
+              value: Coding
+      responses:
+        200:
+          description: Success response of get all task
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tasks"
+              examples:
+                tasks:
+                  description: List of task
+                  value:
+                    data:
+                      - id: 88
+                        title: Jogging
+                        description: Morning jogging
+                        deadline: 2017-07-21T17:32:28Z
+                        priority: 3
+                        category: Sport
+                        created_at: 2017-07-21T17:32:28Z
+                        updated_at: 2017-07-21T17:32:28Z
+                      - id: 89
+                        title: Coding
+                        description: JavaScript programming
+                        deadline: 2017-07-21T17:32:28Z
+                        priority: 2
+                        category: Education
+                        created_at: 2017-07-21T17:32:28Z
+                        updated_at: 2017-07-21T17:32:28Z
+                    pagination:
+                      page: 1
+                      total_page: 5
+                      total_item: 15
+        401:
+          $ref: "#/components/responses/ResponseUnauthorized"
+  /tasks/{taskId}:
+    put:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - Tasks
+      summary: Update task
+      description: Update task
+      parameters:
+        - $ref: "#/components/parameters/TaskId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateOrUpdateTask"
+            examples:
+              Jogging:
+                value:
+                  title: Daily Jogging
+                  description: Jogging to refresh mind and body
+                  deadline: 2017-07-21T17:32:28Z
+                  priority: 3
+                  category: Sport
+      responses:
+        200:
+          description: Success response of update task
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Task"
+              examples:
+                Jogging:
+                  value:
+                    data:
+                      id: 88
+                      title: Daily Jogging
+                      description: Jogging to refresh mind and body
+                      deadline: 2017-07-21T17:32:28Z
+                      priority: 3
+                      category: Sport
+                      created_at: 2017-07-21T17:32:28Z
+                      updated_at: 2017-07-21T17:32:28Z
+        400:
+          description: Request is invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                failed:
+                  value:
+                    errors: Max length of title is 100 characters
+        401:
+          $ref: "#/components/responses/ResponseUnauthorized"
+    delete:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - Tasks
+      summary: Delete task
+      description: Delete task
+      parameters:
+        - $ref: "#/components/parameters/TaskId"
+      responses:
+        204:
+          description: OK
+        401:
+          $ref: "#/components/responses/ResponseUnauthorized"
+        404:
+          $ref: "#/components/responses/ResponseTaskNotFound"
+    get:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - Tasks
+      summary: Get detail task
+      description: Get detail task
+      parameters:
+        - $ref: "#/components/parameters/TaskId"
+      responses:
+        200:
+          description: Success response of get detail task
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Task"
+              examples:
+                task:
+                  $ref: "#/components/examples/ExampleTask"
+        401:
+          $ref: "#/components/responses/ResponseUnauthorized"
+        404:
+          $ref: "#/components/responses/ResponseTaskNotFound"
+  /categories:
+    post:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - Categories
+      summary: Create new category
+      description: Create new category
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                category:
+                  type: string
+            examples:
+              Sport:
+                value:
+                  category: Sport
+      responses:
+        200:
+          description: Success response of create category
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: number
+                      category:
+                        type: string
+              examples:
+                Sport:
+                  value:
+                    data:
+                      id: 5
+                      category: Sport
+        401:
+          $ref: "#/components/responses/ResponseUnauthorized"
+    get:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - Categories
+      summary: Get all categories
+      description: Get all categories
+      responses:
+        200:
+          description: Success response of get categories
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: number
+                        category:
+                          type: string
+              examples:
+                Sport:
+                  value:
+                    data:
+                      - id: 5
+                        category: Sport
+                      - id: 6
+                        category: Food
+        401:
+          $ref: "#/components/responses/ResponseUnauthorized"
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    TaskId:
+      name: taskId
+      in: path
+      required: true
+      description: ID of task
+      schema:
+        type: number
+        minimum: 1
+      examples:
+        Jogging:
+          description: Sample task id of jogging
+          value: 88
+  schemas:
+    User:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            username:
+              type: string
+            name:
+              type: string
+    Task:
+      type: object
+      properties:
+        id:
+          type: number
+        title:
+          type: string
+        description:
+          type: string
+        deadline:
+          type: string
+          format: date-time
+        priority:
+          type: number
+        category:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    CreateOrUpdateTask:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            title:
+              type: string
+            description:
+              type: string
+            deadline:
+              type: string
+              format: date-time
+            priority:
+              type: number
+            category:
+              type: string
+    Tasks:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Task"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+    Pagination:
+      type: object
+      properties:
+        pagination:
+          type: object
+          properties:
+            page:
+              type: number
+            total_page:
+              type: number
+            total_item:
+              type: number
+    Error:
+      type: object
+      properties:
+        errors:
+          type: string
+  responses:
+    ResponseUnauthorized:
+      description: Access token is missing or invalid
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          examples:
+            failed:
+              value:
+                errors: Unauthorized
+    ResponseTaskNotFound:
+      description: Task is not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          examples:
+            failed:
+              value:
+                errors: Task is not found
+  examples:
+    ExampleUser:
+      summary: a sample user object
+      value:
+        data:
+          username: johndoe
+          name: John Doe
+    ExampleTask:
+      summary: a sample task object
+      value:
+        data:
+          id: 88
+          title: Jogging
+          description: Morning jogging
+          deadline: 2017-07-21T17:32:28Z
+          priority: 3
+          category: Sport
+          created_at: 2017-07-21T17:32:28Z
+          updated_at: 2017-07-21T17:32:28Z
