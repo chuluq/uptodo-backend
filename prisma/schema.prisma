@@ -18,6 +18,31 @@ model User {
   password String  @db.VarChar(100)
   name     String  @db.VarChar(100)
   token    String? @db.VarChar(100)
+  tasks    Task[]
 
   @@map("users")
+}
+
+model Task {
+  id          Int       @id @default(autoincrement())
+  title       String    @db.VarChar(100)
+  description String    @db.VarChar(255)
+  deadline    DateTime?
+  priority    Int?
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @default(now()) @updatedAt
+  category    Category  @relation(fields: [category_id], references: [id])
+  category_id Int
+  user        User      @relation(fields: [username], references: [username])
+  username    String    @db.VarChar(100)
+
+  @@map("tasks")
+}
+
+model Category {
+  id       Int    @id @default(autoincrement())
+  category String @db.VarChar(100)
+  Task     Task[]
+
+  @@map("categories")
 }
