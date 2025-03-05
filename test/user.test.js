@@ -216,3 +216,32 @@ describe('PATCH /api/users/current', () => {
     expect(result.status).toBe(401);
   });
 });
+
+describe('DELETE /api/users/logout', () => {
+  beforeEach(async () => {
+    await createTestUser();
+  });
+
+  afterEach(async () => {
+    await removeTestUser();
+  });
+
+  it('should logout user', async () => {
+    const result = await supertest(web).
+        delete('/api/users/logout').
+        set('Authorization', 'test');
+    expect(result.status).toBe(204);
+    expect(result.body.data).toBeUndefined();
+
+    const user = await getTestUser();
+    expect(user.token).toBeNull();
+  });
+
+  it('should reject logout if request is invalid', async () => {
+    const result = await supertest(web).
+        delete('/api/users/logout').
+        set('Authorization', 'salah');
+    expect(result.status).toBe(401);
+    expect(result.body.errors).toBeDefined();
+  });
+});
