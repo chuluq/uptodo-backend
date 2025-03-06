@@ -41,7 +41,7 @@ model Task {
 
 model Category {
   id       Int    @id @default(autoincrement())
-  category String @db.VarChar(100)
+  category String @unique @db.VarChar(100)
   Task     Task[]
 
   @@map("categories")
