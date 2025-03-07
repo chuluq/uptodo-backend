@@ -32,7 +32,7 @@ export const removeTestCategories = async () => {
   await prismaClient.category.deleteMany({
     where: {
       category: {
-        contains: 'test'
+        contains: 'test',
       },
     },
   });
@@ -46,4 +46,28 @@ export const createManyTestCategories = async () => {
       },
     });
   }
+};
+
+export const createTestCategory = async () => {
+  await prismaClient.category.create({
+    data: {
+      category: 'test',
+    },
+  });
+};
+
+export const getTestCategory = async () => {
+  return prismaClient.category.findUnique({
+    where: {
+      category: 'test',
+    },
+  });
+};
+
+export const removeTestTasks = async () => {
+  await prismaClient.task.deleteMany({
+    where: {
+      username: 'test',
+    },
+  });
 };
