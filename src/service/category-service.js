@@ -14,6 +14,16 @@ const create = async (request) => {
   });
 };
 
+const get = async () => {
+  return prismaClient.category.findMany({
+    select: {
+      id: true,
+      category: true,
+    },
+  });
+};
+
 export default {
   create,
+  get,
 };

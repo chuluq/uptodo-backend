@@ -13,6 +13,7 @@ userRouter.delete('/api/users/logout', userController.logout);
 
 // Category API
 userRouter.post('/api/categories', categoryController.create);
+userRouter.get('/api/categories', categoryController.get);
 
 export {
   userRouter,

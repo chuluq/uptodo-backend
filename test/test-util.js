@@ -28,10 +28,22 @@ export const getTestUser = async () => {
   });
 };
 
-export const removeTestCategories = async (category = 'test') => {
+export const removeTestCategories = async () => {
   await prismaClient.category.deleteMany({
     where: {
-      category: category,
+      category: {
+        contains: 'test'
+      },
     },
   });
+};
+
+export const createManyTestCategories = async () => {
+  for (let i = 0; i < 10; i++) {
+    await prismaClient.category.create({
+      data: {
+        category: `test ${i + 1}`,
+      },
+    });
+  }
 };
