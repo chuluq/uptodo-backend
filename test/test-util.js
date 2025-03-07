@@ -71,3 +71,25 @@ export const removeTestTasks = async () => {
     },
   });
 };
+
+export const createTestTask = async () => {
+  const category = await getTestCategory();
+  await prismaClient.task.create({
+    data: {
+      title: 'test',
+      description: 'test description',
+      deadline: '2025-03-07T07:02:49.341Z',
+      priority: 1,
+      category_id: category.id,
+      username: 'test',
+    },
+  });
+};
+
+export const getTestTask = async () => {
+  return prismaClient.task.findFirst({
+    where: {
+      username: 'test',
+    },
+  });
+};

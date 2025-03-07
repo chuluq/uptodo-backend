@@ -13,6 +13,20 @@ const create = async (req, res, next) => {
   }
 };
 
+const get = async (req, res, next) => {
+  try {
+    const user = req.user;
+    const taskId = req.params.taskId;
+    const result = await taskService.get(user, taskId);
+    res.status(200).json({
+      data: result,
+    });
+  } catch (e) {
+    next(e);
+  }
+};
+
 export default {
   create,
+  get,
 };

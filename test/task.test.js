@@ -1,6 +1,6 @@
 import {
-  createTestCategory,
-  createTestUser, getTestCategory,
+  createTestCategory, createTestTask,
+  createTestUser, getTestCategory, getTestTask,
   removeTestCategories, removeTestTasks, removeTestUser,
 } from './test-util.js';
 import supertest from 'supertest';
@@ -20,7 +20,7 @@ describe('POST /api/tasks', () => {
   });
 
   it('should create new task', async () => {
-    const category = await getTestCategory();
+    const testCategory = await getTestCategory();
 
     const result = await supertest(web).
         post('/api/tasks').
@@ -30,7 +30,7 @@ describe('POST /api/tasks', () => {
           description: 'test description',
           deadline: '2025-03-07T07:02:49.341Z',
           priority: 1,
-          category_id: category.id,
+          category_id: testCategory.id,
         });
 
     logger.info(result.body);
@@ -38,13 +38,13 @@ describe('POST /api/tasks', () => {
     expect(result.status).toBe(200);
     expect(result.body.data.title).toBe('test');
     expect(result.body.data.description).toBe('test description');
-    expect(result.body.data.category_id).toBe(category.id);
+    expect(result.body.data.category_id).toBe(testCategory.id);
     expect(result.body.data.deadline).toBe('2025-03-07T07:02:49.341Z');
     expect(result.body.data.priority).toBe(1);
   });
 
   it('should able create new task without priority and deadline', async () => {
-    const category = await getTestCategory();
+    const testCategory = await getTestCategory();
 
     const result = await supertest(web).
         post('/api/tasks').
@@ -52,7 +52,7 @@ describe('POST /api/tasks', () => {
         send({
           title: 'test',
           description: 'test description',
-          category_id: category.id,
+          category_id: testCategory.id,
         });
 
     logger.info(result.body);
@@ -60,11 +60,11 @@ describe('POST /api/tasks', () => {
     expect(result.status).toBe(200);
     expect(result.body.data.title).toBe('test');
     expect(result.body.data.description).toBe('test description');
-    expect(result.body.data.category_id).toBe(category.id);
+    expect(result.body.data.category_id).toBe(testCategory.id);
   });
 
   it('should reject create task if request is invalid', async () => {
-    const category = await getTestCategory();
+    const testCategory = await getTestCategory();
 
     const result = await supertest(web).
         post('/api/tasks').
@@ -74,7 +74,7 @@ describe('POST /api/tasks', () => {
           description: '',
           deadline: '2025-03-07T07:02:49.341Z',
           priority: 1,
-          category_id: category.id,
+          category_id: testCategory.id,
         });
 
     logger.info(result.body);
@@ -84,7 +84,7 @@ describe('POST /api/tasks', () => {
   });
 
   it('should reject create task if user is unauthenticated', async () => {
-    const category = await getTestCategory();
+    const testCategory = await getTestCategory();
 
     const result = await supertest(web).
         post('/api/tasks').
@@ -94,12 +94,57 @@ describe('POST /api/tasks', () => {
           description: 'test description',
           deadline: '2025-03-07T07:02:49.341Z',
           priority: 1,
-          category_id: category.id,
+          category_id: testCategory.id,
         });
 
     logger.info(result.body);
 
     expect(result.status).toBe(401);
+    expect(result.body.errors).toBeDefined();
+  });
+});
+
+describe('GET /api/tasks/:taskId', () => {
+  beforeEach(async () => {
+    await createTestUser();
+    await createTestCategory();
+    await createTestTask();
+  });
+
+  afterEach(async () => {
+    await removeTestTasks();
+    await removeTestCategories();
+    await removeTestUser();
+  });
+
+  it('should get detail task', async () => {
+    const testTask = await getTestTask();
+
+    logger.info(testTask);
+
+    const result = await supertest(web).
+        get('/api/tasks/' + testTask.id).
+        set('Authorization', 'test');
+
+    logger.info(result.body);
+
+    expect(result.status).toBe(200);
+    expect(result.body.data.id).toBe(testTask.id);
+    expect(result.body.data.title).toBe(testTask.title);
+    expect(result.body.data.description).toBe(testTask.description);
+    expect(result.body.data.deadline).toBe(testTask.deadline.toISOString());
+    expect(result.body.data.priority).toBe(testTask.priority);
+    expect(result.body.data.category_id).toBe(testTask.category_id);
+  });
+
+  it('should reject if task is not found', async () => {
+    const testTask = await getTestTask();
+
+    const result = await supertest(web).
+        get('/api/tasks/' + (testTask.id + 1)).
+        set('Authorization', 'test');
+
+    expect(result.status).toBe(404);
     expect(result.body.errors).toBeDefined();
   });
 });
