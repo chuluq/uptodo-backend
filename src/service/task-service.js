@@ -86,12 +86,34 @@ const update = async (user, request) => {
       category_id: true,
       created_at: true,
       updated_at: true,
-    }
-  })
+    },
+  });
+};
+
+const remove = async (user, taskId) => {
+  taskId = validate(getTaskValidation, taskId);
+
+  const totalTaskInDatabase = await prismaClient.task.count({
+    where: {
+      username: user.username,
+      id: taskId,
+    },
+  });
+
+  if (totalTaskInDatabase !== 1) {
+    throw new ResponseError(404, 'task not found');
+  }
+
+  return prismaClient.task.delete({
+    where: {
+      id: taskId,
+    },
+  });
 };
 
 export default {
   create,
   get,
-  update
+  update,
+  remove,
 };

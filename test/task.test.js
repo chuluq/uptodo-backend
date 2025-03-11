@@ -187,7 +187,7 @@ describe('PUT /api/tasks/:taskId', () => {
     expect(result.body.data.category_id).toBe(testTask.category_id);
   });
 
-  it('should reject update if request is invalid',async () => {
+  it('should reject update if request is invalid', async () => {
     const testTask = await getTestTask();
 
     const result = await supertest(web).
@@ -205,7 +205,7 @@ describe('PUT /api/tasks/:taskId', () => {
     expect(result.body.errors).toBeDefined();
   });
 
-  it('should reject update if task is not found',async () => {
+  it('should reject update if task is not found', async () => {
     const testTask = await getTestTask();
 
     const result = await supertest(web).
@@ -220,6 +220,53 @@ describe('PUT /api/tasks/:taskId', () => {
         });
 
     logger.info(result.body);
+
+    expect(result.status).toBe(404);
+    expect(result.body.errors).toBeDefined();
+  });
+});
+
+describe('DELETE /api/tasks/:taskId', () => {
+  beforeEach(async () => {
+    await createTestUser();
+    await createTestCategory();
+    await createTestTask();
+  });
+
+  afterEach(async () => {
+    await removeTestTasks();
+    await removeTestCategories();
+    await removeTestUser();
+  });
+
+  it('should delete task', async () => {
+    const testTask = await getTestTask();
+
+    const result = await supertest(web).
+        delete('/api/tasks/' + testTask.id).
+        set('Authorization', 'test');
+
+    expect(result.status).toBe(204);
+    expect(result.body.data).toBeUndefined();
+  });
+
+  it('should reject delete if request is invalid', async () => {
+    const testTask = await getTestTask();
+
+    const result = await supertest(web).
+        delete('/api/tasks/' + testTask.id).
+        set('Authorization', 'salah');
+
+    expect(result.status).toBe(401);
+    expect(result.body.errors).toBeDefined();
+  });
+
+  it('should reject delete if task is not found', async () => {
+    const testTask = await getTestTask();
+
+    const result = await supertest(web).
+        delete('/api/tasks/' + (testTask.id + 1)).
+        set('Authorization', 'test');
 
     expect(result.status).toBe(404);
     expect(result.body.errors).toBeDefined();

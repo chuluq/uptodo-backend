@@ -41,8 +41,20 @@ const update = async (req, res, next) => {
   }
 };
 
+const remove = async (req, res, next) => {
+  try {
+    const user = req.user;
+    const taskId = req.params.taskId;
+    await taskService.remove(user, taskId);
+    res.status(204).end();
+  } catch (e) {
+    next(e);
+  }
+};
+
 export default {
   create,
   get,
   update,
+  remove,
 };
