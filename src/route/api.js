@@ -19,6 +19,7 @@ userRouter.get('/api/categories', categoryController.get);
 // Task API
 userRouter.post('/api/tasks', taskController.create);
 userRouter.get('/api/tasks/:taskId', taskController.get);
+userRouter.put('/api/tasks/:taskId', taskController.update);
 
 export {
   userRouter,
