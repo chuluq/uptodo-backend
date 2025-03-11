@@ -93,3 +93,19 @@ export const getTestTask = async () => {
     },
   });
 };
+
+export const createManyTestTask = async () => {
+  const category = await getTestCategory();
+  for (let i = 0; i < 15; i++) {
+    await prismaClient.task.create({
+      data: {
+        title: `test ${i + 1}`,
+        description: 'test description',
+        deadline: '2025-03-07T07:02:49.341Z',
+        priority: 1,
+        category_id: category.id,
+        username: 'test',
+      },
+    });
+  }
+};

@@ -1,7 +1,7 @@
 import {validate} from '../validation/validation.js';
 import {
   createTaskValidation,
-  getTaskValidation, updateTaskValidation,
+  getTaskValidation, searchTaskValidation, updateTaskValidation,
 } from '../validation/task-validation.js';
 import {prismaClient} from '../application/database.js';
 import {ResponseError} from '../error/response-error.js';
@@ -111,9 +111,57 @@ const remove = async (user, taskId) => {
   });
 };
 
+const search = async (user, request) => {
+  request = validate(searchTaskValidation, request);
+
+  // 1 ((page - 1) * size) = 0
+  // 2 ((page - 1) * size) = 10
+  const skip = (request.page - 1) * request.size;
+
+  const filters = [];
+
+  filters.push({
+    username: user.username,
+  });
+
+  if (request.title) {
+    filters.push(
+        {
+          title: {
+            contains: request.title,
+          },
+        },
+    );
+  }
+
+  const tasks = await prismaClient.task.findMany({
+    where: {
+      AND: filters,
+    },
+    take: request.size,
+    skip: skip,
+  });
+
+  const totalTask = await prismaClient.task.count({
+    where: {
+      AND: filters,
+    },
+  });
+
+  return {
+    data: tasks,
+    pagination: {
+      page: request.page,
+      total_item: totalTask,
+      total_page: Math.ceil(totalTask / request.size),
+    },
+  };
+};
+
 export default {
   create,
   get,
   update,
   remove,
+  search,
 };

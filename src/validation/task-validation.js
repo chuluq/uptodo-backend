@@ -19,8 +19,15 @@ const updateTaskValidation = Joi.object({
   category_id: Joi.number().positive().required(),
 });
 
+const searchTaskValidation = Joi.object({
+  page: Joi.number().min(1).positive().default(1),
+  size: Joi.number().min(1).max(100).positive().default(10),
+  title: Joi.string().optional(),
+});
+
 export {
   createTaskValidation,
   getTaskValidation,
   updateTaskValidation,
+  searchTaskValidation,
 };

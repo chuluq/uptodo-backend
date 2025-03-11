@@ -1,4 +1,5 @@
 import {
+  createManyTestTask,
   createTestCategory, createTestTask,
   createTestUser, getTestCategory, getTestTask,
   removeTestCategories, removeTestTasks, removeTestUser,
@@ -270,5 +271,51 @@ describe('DELETE /api/tasks/:taskId', () => {
 
     expect(result.status).toBe(404);
     expect(result.body.errors).toBeDefined();
+  });
+});
+
+describe('SEARCH /api/tasks', () => {
+  beforeEach(async () => {
+    await createTestUser();
+    await createTestCategory();
+    await createManyTestTask();
+  });
+
+  afterEach(async () => {
+    await removeTestTasks();
+    await removeTestCategories();
+    await removeTestUser();
+  });
+
+  it('should get all task without query parameter',async () => {
+    const result = await supertest(web).get('/api/tasks').set('Authorization', 'test');
+
+    expect(result.status).toBe(200);
+    expect(result.body.data.length).toBe(15);
+    expect(result.body.pagination.page).toBe(1);
+    expect(result.body.pagination.total_item).toBe(15);
+    expect(result.body.pagination.total_page).toBe(2);
+  });
+
+  it('should get all task from page 2',async () => {
+    const result = await supertest(web).get('/api/tasks').query({page: 2}).set('Authorization', 'test');
+
+    expect(result.status).toBe(200);
+    expect(result.body.data.length).toBe(5);
+    expect(result.body.pagination.page).toBe(2);
+    expect(result.body.pagination.total_item).toBe(15);
+    expect(result.body.pagination.total_page).toBe(2);
+  });
+
+  it('should get all task with specific title',async () => {
+    const result = await supertest(web).get('/api/tasks').query({title: 'test 1'}).set('Authorization', 'test');
+
+    logger.info(result.body);
+
+    expect(result.status).toBe(200);
+    expect(result.body.data.length).toBe(7);
+    expect(result.body.pagination.page).toBe(1);
+    expect(result.body.pagination.total_item).toBe(7);
+    expect(result.body.pagination.total_page).toBe(1);
   });
 });
