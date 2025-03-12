@@ -27,6 +27,7 @@ model Task {
   id          Int       @id @default(autoincrement())
   title       String    @db.VarChar(100)
   description String    @db.VarChar(255)
+  status      Status    @default(NOT_STARTED)
   deadline    DateTime?
   priority    Int?
   created_at  DateTime  @default(now())
@@ -45,4 +46,10 @@ model Category {
   Task     Task[]
 
   @@map("categories")
+}
+
+enum Status {
+  NOT_STARTED @map("Not Started")
+  ON_PROGRESS @map("On Progress")
+  DONE        @map("Done")
 }
